@@ -1,21 +1,80 @@
 #!/usr/bin/env python3
 # Demo script for blockchain-based credit card fraud detection
 
-import pandas as pd
+import os
+import warnings
 import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
 import joblib
 import json
 import hashlib
 from datetime import datetime
-import os
-import matplotlib.pyplot as plt
-import seaborn as sns
+
+# Import preprocessing and model training modules
+import prepare_dataset
+import model_training
 
 from blockchain import Blockchain
 from model_registry import ModelRegistry
 
+def suppress_warnings():
+    """Suppress specific warnings"""
+    warnings.filterwarnings('ignore', category=UserWarning)
+    warnings.filterwarnings('ignore', category=RuntimeWarning)
+
+def load_or_prepare_data():
+    """
+    Load preprocessed data or prepare it if not available
+    Returns processed train and test datasets
+    """
+    data_dir = './data'
+    train_data_path = os.path.join(data_dir, 'train_data.csv')
+    test_data_path = os.path.join(data_dir, 'test_data.csv')
+    
+    # Check if preprocessed data exists
+    if os.path.exists(train_data_path) and os.path.exists(test_data_path):
+        print("Loading preprocessed datasets...")
+        train_df = pd.read_csv(train_data_path)
+        test_df = pd.read_csv(test_data_path)
+    else:
+        print("Preprocessed datasets not found. Preparing data...")
+        # Call the prepare_dataset module to process the data
+        prepare_dataset.prepare_dataset('creditcard.csv')
+        
+        # Reload the processed data
+        train_df = pd.read_csv(train_data_path)
+        test_df = pd.read_csv(test_data_path)
+    
+    return train_df, test_df
+
+def load_or_train_model():
+    """
+    Load an existing model or train a new one
+    Returns trained model
+    """
+    results_dir = 'results'
+    os.makedirs(results_dir, exist_ok=True)
+    
+    # Check for existing models
+    model_files = [f for f in os.listdir(results_dir) if f.endswith('_model.pkl')]
+    
+    if model_files:
+        # Load the first available model
+        model_path = os.path.join(results_dir, model_files[0])
+        print(f"Loading pre-trained model: {model_path}")
+        return joblib.load(model_path)
+    else:
+        print("No pre-trained models found. Training a new model...")
+        # Call the model_training module to train a model
+        trained_model = model_training.main()
+        return trained_model
+
 def demo_system():
     """Run a complete demonstration of the blockchain-based fraud detection system"""
+    # Suppress warnings
+    suppress_warnings()
+
     print("\n" + "="*80)
     print("BLOCKCHAIN-BASED CREDIT CARD FRAUD DETECTION SYSTEM DEMO")
     print("="*80 + "\n")
@@ -25,100 +84,75 @@ def demo_system():
     blockchain = Blockchain()
     model_registry = ModelRegistry()
     
-    # Check if dataset exists, if not, suggest downloading
-    if not os.path.exists('creditcard.csv'):
-        print("ERROR: Dataset 'creditcard.csv' not found.")
-        print("Please download the Credit Card Fraud Detection dataset from Kaggle:")
-        print("https://www.kaggle.com/datasets/mlg-ulb/creditcardfraud")
-        return
-    
-    # Step 1: Load and explore dataset
-    print("\n" + "-"*40)
-    print("STEP 1: LOADING AND EXPLORING DATASET")
-    print("-"*40)
-    
-    print("Loading credit card transaction dataset...")
-    df = pd.read_csv('creditcard.csv')
-    
-    print(f"Dataset shape: {df.shape}")
-    print(f"Number of transactions: {len(df)}")
-    print(f"Fraud cases: {df['Class'].sum()}")
-    print(f"Fraud percentage: {df['Class'].mean() * 100:.4f}%")
-    
-    # Create a directory for outputs
+    # Create output directory
     os.makedirs('demo_output', exist_ok=True)
     
-    # Plot class distribution
-    plt.figure(figsize=(10, 6))
-    sns.countplot(x='Class', data=df)
-    plt.title('Class Distribution (0: Legitimate, 1: Fraud)')
-    plt.xlabel('Class')
-    plt.ylabel('Count')
-    plt.tight_layout()
-    plt.savefig('demo_output/class_distribution.png')
+    # Load or prepare datasets
+    train_df, test_df = load_or_prepare_data()
     
-    # Step 2: Prepare data for model training
+    # Load or train model
+    model = load_or_train_model()
+    
+    # Prepare test data
+    X_test = test_df.drop('Class', axis=1)
+    y_test = test_df['Class']
+    
+    # Convert to numpy for prediction
+    X_test_array = X_test.to_numpy()
+    
     print("\n" + "-"*40)
-    print("STEP 2: PREPARING DATA FOR MODEL TRAINING")
+    print("DATASET INFORMATION")
     print("-"*40)
+    print(f"Test dataset shape: {test_df.shape}")
+    print(f"Number of transactions: {len(test_df)}")
+    print(f"Fraud cases: {test_df['Class'].sum()}")
+    print(f"Fraud percentage: {test_df['Class'].mean() * 100:.4f}%")
     
-    # Separate features and target
-    X = df.drop('Class', axis=1)
-    y = df['Class']
+    # Evaluation
+    from sklearn.metrics import classification_report, roc_curve, auc
     
-    # Sample a smaller subset for this demo
-    from sklearn.model_selection import train_test_split
-    X_train, X_test, y_train, y_test = train_test_split(
-        X, y, test_size=0.2, random_state=42, stratify=y)
+    # Predict
+    y_pred = model.predict(X_test_array)
+    y_pred_proba = model.predict_proba(X_test_array)[:, 1]
     
-    print(f"Training set: {X_train.shape[0]} samples")
-    print(f"Test set: {X_test.shape[0]} samples")
-    print(f"Training set fraud cases: {y_train.sum()} ({y_train.mean()*100:.4f}%)")
-    
-    # Step 3: Train a fraud detection model
-    print("\n" + "-"*40)
-    print("STEP 3: TRAINING FRAUD DETECTION MODEL")
-    print("-"*40)
-    
-    from sklearn.ensemble import RandomForestClassifier
-    from sklearn.metrics import classification_report, confusion_matrix
-    
-    print("Training a Random Forest classifier...")
-    model = RandomForestClassifier(
-        n_estimators=100, 
-        max_depth=10,
-        random_state=42,
-        class_weight='balanced'
-    )
-    model.fit(X_train, y_train)
-    
-    # Evaluate model
-    y_pred = model.predict(X_test)
-    print("\nModel evaluation:")
+    # Print classification report
+    print("\nModel Evaluation:")
     print(classification_report(y_test, y_pred))
     
-    # Save model
-    model_path = 'demo_output/fraud_detection_model.pkl'
-    joblib.dump(model, model_path)
-    print(f"Model saved to {model_path}")
+    # ROC Curve
+    fpr, tpr, _ = roc_curve(y_test, y_pred_proba)
+    roc_auc = auc(fpr, tpr)
     
-    # Step 4: Register model on blockchain
-    print("\n" + "-"*40)
-    print("STEP 4: REGISTERING MODEL ON BLOCKCHAIN")
-    print("-"*40)
+    # Plot ROC curve
+    plt.figure(figsize=(8, 6))
+    plt.plot(fpr, tpr, color='darkorange', lw=2, label=f'ROC curve (AUC = {roc_auc:.2f})')
+    plt.plot([0, 1], [0, 1], color='navy', lw=2, linestyle='--')
+    plt.xlim([0.0, 1.0])
+    plt.ylim([0.0, 1.05])
+    plt.xlabel('False Positive Rate')
+    plt.ylabel('True Positive Rate')
+    plt.title('Receiver Operating Characteristic (ROC) Curve')
+    plt.legend(loc="lower right")
+    plt.savefig('demo_output/roc_curve.png')
+    plt.close()
     
+    # Model registration and blockchain
     # Compute model hash
     model_str = str(model.get_params())
-    model_str += str(model.feature_importances_.tolist())
+    if hasattr(model, 'feature_importances_'):
+        model_str += str(model.feature_importances_.tolist())
     model_hash = hashlib.sha256(model_str.encode()).hexdigest()
     
     # Create model metadata
     model_metadata = {
         'model_hash': model_hash,
-        'model_type': 'RandomForestClassifier',
+        'model_type': type(model).__name__,
         'hyperparameters': model.get_params(),
         'metrics': {
             'accuracy': (y_pred == y_test).mean(),
+            'auc': roc_auc,
+            'precision_fraud': classification_report(y_test, y_pred, output_dict=True)['1']['precision'],
+            'recall_fraud': classification_report(y_test, y_pred, output_dict=True)['1']['recall'],
             'timestamp': datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         },
         'created_at': datetime.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -132,170 +166,78 @@ def demo_system():
         'action': 'MODEL_REGISTRATION',
         'model_id': model_id,
         'model_hash': model_hash,
+        'metrics': model_metadata['metrics'],
         'timestamp': datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     }
     blockchain.add_transaction(transaction_data)
     blockchain.mine_pending_transactions("model_developer")
     
-    print(f"Model registered with ID: {model_id}")
+    print(f"\nModel registered with ID: {model_id}")
     print(f"Model hash: {model_hash}")
-    print("Model registration recorded in blockchain")
     
-    # Step 5: Process transactions and record decisions
+    # Transaction processing simulation
     print("\n" + "-"*40)
-    print("STEP 5: PROCESSING TRANSACTIONS")
+    print("TRANSACTION PROCESSING SIMULATION")
     print("-"*40)
     
-    # Select a small sample of transactions for demonstration
+    # Sample transactions
     sample_size = 10
-    test_sample = X_test.sample(sample_size, random_state=42)
-    test_sample_indices = test_sample.index
-    sample_y = y_test[test_sample_indices]
+    sample_indices = np.random.choice(X_test_array.shape[0], sample_size, replace=False)
+    sample_transactions = X_test_array[sample_indices]
+    sample_labels = y_test.iloc[sample_indices]
     
     print(f"Processing {sample_size} sample transactions...")
     
-    for i, (idx, transaction) in enumerate(test_sample.iterrows()):
+    for i in range(sample_size):
         # Make prediction
-        transaction_array = transaction.values.reshape(1, -1)
-        prediction = model.predict(transaction_array)[0]
-        prediction_proba = model.predict_proba(transaction_array)[0][1]
+        transaction = sample_transactions[i].reshape(1, -1)
+        prediction = model.predict(transaction)[0]
+        prediction_proba = model.predict_proba(transaction)[0][1]
+        actual_label = sample_labels.iloc[i]
         
-        # Get actual class
-        actual = sample_y[idx]
-        
-        # Create transaction hash
-        transaction_str = str(transaction.to_dict())
-        transaction_hash = hashlib.sha256(transaction_str.encode()).hexdigest()
+        # Hash the transaction
+        transaction_hash = hashlib.sha256(str(transaction.tolist()).encode()).hexdigest()
         
         # Record to blockchain
-        transaction_data = {
+        transaction_record = {
             'action': 'FRAUD_DETERMINATION',
-            'transaction_id': f"tx_{i}",
             'transaction_hash': transaction_hash,
             'model_id': model_id,
             'prediction': int(prediction),
             'confidence': float(prediction_proba),
+            'actual_label': int(actual_label),
             'timestamp': datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         }
         
-        blockchain.add_transaction(transaction_data)
+        blockchain.add_transaction(transaction_record)
         
-        # Mine every few transactions
+        # Mine transactions periodically
         if (i + 1) % 3 == 0 or i == sample_size - 1:
             blockchain.mine_pending_transactions("payment_processor")
         
+        # Print transaction details
         result = "FRAUD" if prediction == 1 else "LEGITIMATE"
-        actual_result = "FRAUD" if actual == 1 else "LEGITIMATE"
-        match = "✓" if prediction == actual else "✗"
+        actual = "FRAUD" if actual_label == 1 else "LEGITIMATE"
+        match = "✓" if prediction == actual_label else "✗"
         
-        print(f"Transaction {i+1}: Predicted: {result} (Confidence: {prediction_proba:.4f}), Actual: {actual_result} {match}")
+        print(f"Transaction {i+1}: Predicted: {result} (Confidence: {prediction_proba:.4f}), Actual: {actual} {match}")
     
-    # Step 6: Verify model integrity
+    # Blockchain status
     print("\n" + "-"*40)
-    print("STEP 6: VERIFYING MODEL INTEGRITY")
+    print("BLOCKCHAIN STATUS")
     print("-"*40)
-    
-    # Get model from registry
-    registered_model = model_registry.get_model(model_id)
-    registered_hash = registered_model['model_hash']
-    
-    # Compute current hash
-    current_hash = hashlib.sha256(model_str.encode()).hexdigest()
-    
-    print(f"Registered hash: {registered_hash}")
-    print(f"Current hash:    {current_hash}")
-    
-    if current_hash == registered_hash:
-        print("✅ Model integrity verified - hashes match")
-    else:
-        print("❌ Model integrity check FAILED - hashes do not match")
-    
-    # Step 7: Simulate tampering attempt
-    print("\n" + "-"*40)
-    print("STEP 7: SIMULATING TAMPERING ATTEMPT")
-    print("-"*40)
-    
-    print("Tampering with model by modifying parameters...")
-    
-    # Tamper with the model by changing parameters
-    tampered_model = RandomForestClassifier(
-        n_estimators=50,  # Changed from 100
-        max_depth=5,      # Changed from 10
-        random_state=43,  # Changed from 42
-        class_weight='balanced'
-    )
-    tampered_model.fit(X_train, y_train)
-    
-    # Save tampered model
-    joblib.dump(tampered_model, 'demo_output/tampered_model.pkl')
-    
-    # Compute hash of tampered model
-    tampered_str = str(tampered_model.get_params())
-    tampered_str += str(tampered_model.feature_importances_.tolist())
-    tampered_hash = hashlib.sha256(tampered_str.encode()).hexdigest()
-    
-    print(f"Original model hash: {model_hash}")
-    print(f"Tampered model hash: {tampered_hash}")
-    
-    # Check if tampering is detected
-    if tampered_hash != registered_hash:
-        print("🚨 TAMPERING DETECTED: Model hash does not match registered hash")
-        
-        # Record tampering detection in blockchain
-        tampering_data = {
-            'action': 'TAMPERING_DETECTION',
-            'model_id': model_id,
-            'registered_hash': registered_hash,
-            'detected_hash': tampered_hash,
-            'timestamp': datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        }
-        
-        blockchain.add_transaction(tampering_data)
-        blockchain.mine_pending_transactions("regulatory_authority")
-        print("Tampering event recorded in blockchain")
-    else:
-        print("Model verification passed")
-    
-    # Step 8: View blockchain status
-    print("\n" + "-"*40)
-    print("STEP 8: BLOCKCHAIN STATUS")
-    print("-"*40)
-    
     print(f"Blockchain length: {len(blockchain.chain)} blocks")
-    print(f"Blockchain valid: {'Yes' if blockchain.is_chain_valid() else 'No'}")
     
-    # Count transactions by type
-    transactions = blockchain.get_transaction_history()
-    transaction_types = {}
-    for tx in transactions:
-        if 'action' in tx:
-            action = tx['action']
-            transaction_types[action] = transaction_types.get(action, 0) + 1
+    # Verify blockchain integrity
+    blockchain_valid = blockchain.is_chain_valid()
+    print(f"Blockchain valid: {'Yes' if blockchain_valid else 'No'}")
     
-    print("\nTransaction types:")
-    for tx_type, count in transaction_types.items():
-        print(f"  {tx_type}: {count}")
-    
-    # Save blockchain state to file
-    blockchain_data = []
-    for block in blockchain.chain:
-        blockchain_data.append(block.to_dict())
-    
+    # Save blockchain state
+    blockchain_data = [block.to_dict() for block in blockchain.chain]
     with open('demo_output/blockchain_state.json', 'w') as f:
         json.dump(blockchain_data, f, indent=2, default=str)
     
-    print("\nBlockchain state saved to demo_output/blockchain_state.json")
-    
-    # Save model registry to file
-    with open('demo_output/model_registry.json', 'w') as f:
-        json.dump(model_registry.registry, f, indent=2, default=str)
-    
-    print("Model registry saved to demo_output/model_registry.json")
-    
-    print("\n" + "="*80)
-    print("DEMO COMPLETED SUCCESSFULLY")
-    print("="*80)
-    print("\nOutput files can be found in the 'demo_output' directory.")
+    print("Blockchain state saved to demo_output/blockchain_state.json")
 
 if __name__ == "__main__":
     demo_system()
