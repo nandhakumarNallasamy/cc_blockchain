@@ -1,0 +1,178 @@
+[
+  {
+    "index": 0,
+    "timestamp": "2025-04-27 05:54:27",
+    "transactions": [],
+    "previous_hash": "0",
+    "nonce": 0,
+    "hash": "053aa8a3a3a23d0f3b312156cd78dd65dd4e2c813b9fdd8fe8f1027159a5d096"
+  },
+  {
+    "index": 1,
+    "timestamp": "2025-04-27 05:54:30",
+    "transactions": [
+      {
+        "action": "MODEL_REGISTRATION",
+        "model_id": "16b712eb-6b94-4344-843f-3d06f26c7d12",
+        "model_hash": "373056c883cd61bcba1c88d7137ab4d324205e2b6a616ab06977f168479033a5",
+        "metrics": {
+          "accuracy": 0.9974368877497279,
+          "auc": 0.9614825706591021,
+          "precision_fraud": 0.38990825688073394,
+          "recall_fraud": 0.8673469387755102,
+          "timestamp": "2025-04-27 05:54:30"
+        },
+        "timestamp": "2025-04-27 05:54:30"
+      }
+    ],
+    "previous_hash": "053aa8a3a3a23d0f3b312156cd78dd65dd4e2c813b9fdd8fe8f1027159a5d096",
+    "nonce": 459,
+    "hash": "00228f9f973b9e29d9084ac1f235985a20bd4bed44192b35d776e555ae81fe71"
+  },
+  {
+    "index": 2,
+    "timestamp": "2025-04-27 05:54:30",
+    "transactions": [
+      {
+        "action": "MINING_REWARD",
+        "miner": "model_developer",
+        "timestamp": "2025-04-27 05:54:30"
+      },
+      {
+        "action": "FRAUD_DETERMINATION",
+        "transaction_hash": "14651eba11c7600ae5741a2e9831e7d946b09d3250c1b18cf40bde486077061d",
+        "model_id": "16b712eb-6b94-4344-843f-3d06f26c7d12",
+        "prediction": 0,
+        "confidence": 0.0075109014329901,
+        "actual_label": 0,
+        "timestamp": "2025-04-27 05:54:30"
+      },
+      {
+        "action": "FRAUD_DETERMINATION",
+        "transaction_hash": "f626239e2733e217e0cb3e1736395b06e5e39b6d95d5764800a2afe051e1d82a",
+        "model_id": "16b712eb-6b94-4344-843f-3d06f26c7d12",
+        "prediction": 0,
+        "confidence": 0.008458461659760507,
+        "actual_label": 0,
+        "timestamp": "2025-04-27 05:54:30"
+      },
+      {
+        "action": "FRAUD_DETERMINATION",
+        "transaction_hash": "715618d5d78b71b51e4860c66dd2429da9127d9b76ee162d42b8d8fa8f91599f",
+        "model_id": "16b712eb-6b94-4344-843f-3d06f26c7d12",
+        "prediction": 0,
+        "confidence": 0.0010006813473204684,
+        "actual_label": 0,
+        "timestamp": "2025-04-27 05:54:30"
+      }
+    ],
+    "previous_hash": "00228f9f973b9e29d9084ac1f235985a20bd4bed44192b35d776e555ae81fe71",
+    "nonce": 17,
+    "hash": "004cb148e727f23798307bc68281f5b8ab0f38181ad21239470cfb5a988eb639"
+  },
+  {
+    "index": 3,
+    "timestamp": "2025-04-27 05:54:30",
+    "transactions": [
+      {
+        "action": "MINING_REWARD",
+        "miner": "payment_processor",
+        "timestamp": "2025-04-27 05:54:30"
+      },
+      {
+        "action": "FRAUD_DETERMINATION",
+        "transaction_hash": "d4b6c7ea4f0c1177070baad0bcda2f39ba38f4771080aff8e693ce2d70a76791",
+        "model_id": "16b712eb-6b94-4344-843f-3d06f26c7d12",
+        "prediction": 0,
+        "confidence": 0.0016104165417156618,
+        "actual_label": 0,
+        "timestamp": "2025-04-27 05:54:30"
+      },
+      {
+        "action": "FRAUD_DETERMINATION",
+        "transaction_hash": "6ed411efb112b3138a11d0425f7f7bfa5bb3deff0a0807a86edecf10a0402885",
+        "model_id": "16b712eb-6b94-4344-843f-3d06f26c7d12",
+        "prediction": 0,
+        "confidence": 0.003963195240992156,
+        "actual_label": 0,
+        "timestamp": "2025-04-27 05:54:30"
+      },
+      {
+        "action": "FRAUD_DETERMINATION",
+        "transaction_hash": "d3b8018c95c78584a4240de65b98cf3c98725845360272614723ed2892eeac54",
+        "model_id": "16b712eb-6b94-4344-843f-3d06f26c7d12",
+        "prediction": 0,
+        "confidence": 0.0005596913171109208,
+        "actual_label": 0,
+        "timestamp": "2025-04-27 05:54:30"
+      }
+    ],
+    "previous_hash": "004cb148e727f23798307bc68281f5b8ab0f38181ad21239470cfb5a988eb639",
+    "nonce": 74,
+    "hash": "000cd00d2cd3672c199ee6acdaa0c8f6314230c2c4b24d5e0334fe408a4fda42"
+  },
+  {
+    "index": 4,
+    "timestamp": "2025-04-27 05:54:31",
+    "transactions": [
+      {
+        "action": "MINING_REWARD",
+        "miner": "payment_processor",
+        "timestamp": "2025-04-27 05:54:30"
+      },
+      {
+        "action": "FRAUD_DETERMINATION",
+        "transaction_hash": "327278edad721902c7f8fcc0f269bbb11244a109f98a29fa6d5dc5b8d0d61dee",
+        "model_id": "16b712eb-6b94-4344-843f-3d06f26c7d12",
+        "prediction": 0,
+        "confidence": 0.0009077806535795834,
+        "actual_label": 0,
+        "timestamp": "2025-04-27 05:54:31"
+      },
+      {
+        "action": "FRAUD_DETERMINATION",
+        "transaction_hash": "5204ccf7102cc73413bf2d307554b5e59539da20829e738942eded91e24cc47c",
+        "model_id": "16b712eb-6b94-4344-843f-3d06f26c7d12",
+        "prediction": 0,
+        "confidence": 0.0016837523440292258,
+        "actual_label": 0,
+        "timestamp": "2025-04-27 05:54:31"
+      },
+      {
+        "action": "FRAUD_DETERMINATION",
+        "transaction_hash": "77a4acddc3da6583e7af1a00aac4dd9c149b91120ae9e2a7462f18daa86fd194",
+        "model_id": "16b712eb-6b94-4344-843f-3d06f26c7d12",
+        "prediction": 0,
+        "confidence": 0.01219441194853053,
+        "actual_label": 0,
+        "timestamp": "2025-04-27 05:54:31"
+      }
+    ],
+    "previous_hash": "000cd00d2cd3672c199ee6acdaa0c8f6314230c2c4b24d5e0334fe408a4fda42",
+    "nonce": 34,
+    "hash": "00b00a1e11604260d8b4d5cd2ac43b368faae70207e45ed382897e0d4dc3e430"
+  },
+  {
+    "index": 5,
+    "timestamp": "2025-04-27 05:54:31",
+    "transactions": [
+      {
+        "action": "MINING_REWARD",
+        "miner": "payment_processor",
+        "timestamp": "2025-04-27 05:54:31"
+      },
+      {
+        "action": "FRAUD_DETERMINATION",
+        "transaction_hash": "743f3b748632eb38fb7ae1e559d04f49e7ea1838947ac3aa354c3fc2f7b5996b",
+        "model_id": "16b712eb-6b94-4344-843f-3d06f26c7d12",
+        "prediction": 0,
+        "confidence": 0.0029952766999286284,
+        "actual_label": 0,
+        "timestamp": "2025-04-27 05:54:31"
+      }
+    ],
+    "previous_hash": "00b00a1e11604260d8b4d5cd2ac43b368faae70207e45ed382897e0d4dc3e430",
+    "nonce": 107,
+    "hash": "0044b32e2db394aa0237135ffb304ff0baf3caddcc5d754e4da6423eab03fec8"
+  }
+]
