@@ -1,7 +1,5 @@
 # Blockchain-based Credit Card Fraud Detection System
 
-This project implements a blockchain-based framework for securing AI-powered credit card fraud detection systems, as described in the research reports.
-
 ## Project Overview
 
 The system addresses key vulnerabilities in traditional fraud detection systems:
@@ -10,6 +8,22 @@ The system addresses key vulnerabilities in traditional fraud detection systems:
 - **Audit Trails:** Creates immutable records of model updates and fraud determinations
 - **Verification:** Enables cryptographic verification of model integrity
 - **Decision Transparency:** Records model decisions for accountability
+
+## Dataset Download
+
+**IMPORTANT:** The credit card fraud detection dataset is not included in this repository due to its large size.
+
+### How to Get the Dataset
+1. Visit the Kaggle dataset page: [Credit Card Fraud Detection Dataset](https://www.kaggle.com/datasets/mlg-ulb/creditcardfraud)
+2. Download the `creditcard.csv` file
+3. Place the `creditcard.csv` file in the project's root directory
+
+### Dataset Details
+- 284,807 transactions from European cardholders
+- 492 fraudulent transactions (0.172% of the total)
+- 28 anonymized features (V1-V28) for privacy protection
+- Original transaction amount and time variables
+- Class labels indicating fraud (1) or legitimate (0) transactions
 
 ## Components
 
@@ -21,101 +35,76 @@ The system consists of the following components:
 4. **Secure Deployment System** - Framework for deploying models with integrity verification
 5. **API Server** - RESTful API for interacting with the system
 
-## Files
-
-- `main.py` - Main application script that demonstrates the system's functionality
-- `blockchain.py` - Implementation of the blockchain for recording transactions
-- `model_registry.py` - System for registering and verifying model integrity
-- `prepare_dataset.py` - Script to prepare the credit card fraud dataset
-- `model_training.py` - Trains and evaluates fraud detection models
-- `secure_model_deployment.py` - Manages secure model deployment and verification
-- `api_server.py` - Simple REST API for interacting with the system
-- `transaction_processor.py` - Real-time transaction processing with blockchain validation
-- `demo.py` - Demonstration script showing the system in action
-- `test_blockchain.py` - Tests for the blockchain component
-- `test_model_registry.py` - Tests for the model registry
-
-## Dataset
-
-The system uses the Credit Card Fraud Detection dataset from Kaggle, which contains:
-- 284,807 transactions from European cardholders
-- 492 fraudulent transactions (0.172% of the total)
-- 28 anonymized features (V1-V28) for privacy protection
-- Original transaction amount and time variables
-- Class labels indicating fraud (1) or legitimate (0) transactions
-
-## Installation and Setup
+## Execution Guide
 
 ### Prerequisites
-
 - Python 3.8 or higher
-- Required packages:
-  - pandas
-  - numpy
-  - scikit-learn
-  - imbalanced-learn
-  - matplotlib
-  - seaborn
-  - flask
-  - joblib
+- Kaggle account (to download the dataset)
 
-### Install Dependencies
+### Installation Steps
+1. Clone the repository
+```bash
+git clone https://github.com/yourusername/blockchain-fraud-detection.git
+cd blockchain-fraud-detection
+```
 
+2. Create a virtual environment (optional but recommended)
+```bash
+python3 -m venv venv
+source venv/bin/activate  # On Windows use `venv\Scripts\activate`
+```
+
+3. Install dependencies
 ```bash
 pip install -r requirements.txt
 ```
 
-### Prepare the Dataset
+### Workflow
 
-1. Download the Credit Card Fraud Detection dataset from Kaggle and save it as `creditcard.csv`
-2. Run the data preparation script:
-
+#### 1. Prepare Dataset
 ```bash
 python prepare_dataset.py
 ```
+This script will:
+- Load the dataset
+- Preprocess the data
+- Split into training and testing sets
+- Generate visualizations
 
-### Train Models
-
+#### 2. Train Models
 ```bash
 python model_training.py
 ```
-
-## Usage
-
-### Run the Main Demo
-
-```bash
-python main.py
-```
-
 This will:
-1. Load and preprocess the dataset
-2. Train a fraud detection model
-3. Register the model on the blockchain
-4. Simulate transaction processing
-5. Verify model integrity
-6. Simulate a model tampering attack and detect it
+- Train multiple fraud detection models
+- Evaluate model performance
+- Save best-performing models
+- Generate performance reports and visualizations
 
-### Secure Model Deployment
-
+#### 3. Demonstration
 ```bash
-python secure_model_deployment.py results/RandomForest_model.pkl creditcard.csv
+python demo.py
+```
+A comprehensive demo showing:
+- Model registration
+- Blockchain-based transaction processing
+- Fraud detection
+- Model integrity verification
+- Tampering detection
+
+#### 4. Real-time Transaction Processing
+```bash
+python transaction_processor.py results/RandomForest_model.pkl creditcard.csv
 ```
 
-### Start the API Server
-
+### Running Tests
 ```bash
-python api_server.py
+# Blockchain tests
+python -m unittest test_blockchain.py
+
+# Model registry tests
+python -m unittest test_model_registry.py
 ```
-
-## API Endpoints
-
-- `GET /health` - Check system health
-- `POST /load_model` - Load and register a model
-- `POST /predict` - Make a fraud prediction
-- `GET /verify_model` - Verify model integrity
-- `GET /blockchain/status` - Get blockchain status
-- `GET /transaction/verify` - Verify a transaction
 
 ## Blockchain System
 
@@ -126,56 +115,33 @@ The blockchain implementation provides:
 3. **Multi-Party Verification** - Different organizations can participate in the validation process
 4. **Decision Transparency** - All fraud determinations are recorded with their decision parameters
 
-## Security Features
+## Additional Execution Options
 
-- **Cryptographic Model Verification** - Models are hashed to ensure integrity
-- **Consensus-Based Updates** - Changes require multi-party agreement
-- **Immutable Decision Records** - All fraud determinations are permanently recorded
-- **Transparent Audit System** - Complete history of model operations is available
+### API Server
+```bash
+python api_server.py
+```
+Starts a Flask API for model prediction and blockchain interaction.
 
-## Architecture
+### Secure Model Deployment
+```bash
+python secure_model_deployment.py results/RandomForest_model.pkl creditcard.csv
+```
 
-### Blockchain Implementation
-
-The blockchain is implemented as a chain of blocks, where each block contains:
-- A list of transactions
-- A timestamp
-- A hash of the previous block
-- A proof-of-work nonce
-
-The blockchain uses a simple proof-of-work consensus mechanism that requires finding a hash with a specified number of leading zeros.
-
-### Model Registry
-
-The model registry maintains a secure record of all models, including:
-- Model metadata (type, hyperparameters)
-- Model hash for integrity verification
-- Version history and update records
-- Performance metrics
-
-### Fraud Detection Model
-
-The system uses a Random Forest classifier trained on the credit card fraud dataset. The model is evaluated using:
-- Precision and recall metrics (critical for imbalanced fraud detection)
-- ROC and Precision-Recall curves
-- Confusion matrix analysis
-
-### Integration Architecture
-
-The components are integrated as follows:
-1. Models are trained and registered in the model registry
-2. Model metadata and hash are recorded on the blockchain
-3. Transaction validation uses the registered model
-4. Validation decisions are recorded on the blockchain
-5. Regular integrity checks detect tampering attempts
-
-## Organization Structure
+## Organizational Structure
 
 The blockchain network includes the following organizations:
 1. **Payment Processor** - Responsible for transaction validation
 2. **Financial Institution** - Provides transaction data and verifies models
 3. **Regulatory Authority** - Oversees the system and approves model updates
 4. **Model Development Team** - Creates and updates fraud detection models
+
+## Security Features
+
+- **Cryptographic Model Verification** - Models are hashed to ensure integrity
+- **Consensus-Based Updates** - Changes require multi-party agreement
+- **Immutable Decision Records** - All fraud determinations are permanently recorded
+- **Transparent Audit System** - Complete history of model operations is available
 
 ## Future Improvements
 
@@ -185,28 +151,13 @@ The blockchain network includes the following organizations:
 - Develop more sophisticated consensus mechanisms for model updates
 - Create comprehensive visualization dashboard for system monitoring
 
-## Running Tests
-
-```bash
-# Run blockchain tests
-python -m unittest test_blockchain.py
-
-# Run model registry tests
-python -m unittest test_model_registry.py
-```
-
-## Real-time Transaction Processing
-
-For real-time transaction processing, use the transaction processor:
-
-```bash
-python transaction_processor.py model_path [csv_file]
-```
+## Troubleshooting
+- Ensure you have downloaded `creditcard.csv` from Kaggle
+- Check that all dependencies are installed
+- Verify Python version compatibility
 
 ## Contributing
-
-Contributions are welcome! Please feel free to submit a Pull Request.
+Contributions are welcome! Please submit pull requests or open issues.
 
 ## License
-
-MIT
+MIT License - See LICENSE file for details
